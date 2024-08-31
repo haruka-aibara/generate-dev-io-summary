@@ -1,9 +1,36 @@
+module "iam" {
+  source = "./modules/iam"
+}
+
+module "sqs" {
+  source = "./modules/sqs"
+  name   = var.queue_name
+}
+
+module "sns" {
+  source = "./modules/sns"
+  name   = var.topic_name
+}
+
+module "scraper_lambda" {
+  source        = "./modules/lambda"
+  filename      = "${path.module}/lambda_functions/scraper/lambda_function.zip"
+  function_name = "dev_io_scraper"
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.9"
+  role_arn      = module.iam.lambda_role_arn
+
+  environment_variables = {
+    QUEUE_URL = module.sqs.queue_url
+  }
+}
+
 module "summarizer_lambda" {
   source        = "./modules/lambda"
+  filename      = "${path.module}/lambda_functions/summarizer/lambda_function.zip"
   function_name = "dev_io_summarizer"
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.9"
-  filename      = "${path.module}/lambda_functions/summarizer/lambda_function.zip"
   role_arn      = module.iam.lambda_role_arn
 
   environment_variables = {

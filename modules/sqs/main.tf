@@ -1,3 +1,3 @@
-resource "aws_sns_topic" "this" {
+resource "aws_sqs_queue" "this" {
   name = var.name
 }
