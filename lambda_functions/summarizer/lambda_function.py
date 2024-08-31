@@ -3,7 +3,7 @@ import json
 import os
 import requests
 from bs4 import BeautifulSoup
-
+import urllib.parse
 
 # キュー情報を設定
 queue_url = os.environ["QUEUE_URL"]
@@ -12,68 +12,91 @@ sqs = boto3.client("sqs", region_name="ap-northeast-1")
 sns = boto3.client("sns", region_name="ap-northeast-1")
 bedrock_runtime = boto3.client("bedrock-runtime",region_name="ap-northeast-1")
 
-
-# メイン処理
 def lambda_handler(event, context):
-    res = sqs.receive_message(
-        QueueUrl=queue_url,
-        AttributeNames=["All"],
-        MessageAttributeNames=["All"],
-        MaxNumberOfMessages=1,
-        VisibilityTimeout=30,
-        WaitTimeSeconds=0
-    )
-
-    if "Messages" in res:
-        message = res["Messages"][0]
-        article_url = message["Body"]
-        # メッサージをキューから削除
-        receipt_handle = message["ReceiptHandle"]
-        sqs.delete_message(
+    try:
+        res = sqs.receive_message(
             QueueUrl=queue_url,
-            ReceiptHandle=receipt_handle
+            AttributeNames=["All"],
+            MessageAttributeNames=["All"],
+            MaxNumberOfMessages=1,
+            VisibilityTimeout=30,
+            WaitTimeSeconds=0
         )
-        # スクレイピング処理に記事URLを連携
-        article_title, article_text = scraping_article(article_url)
-        article_summary = generate_summary(article_text)
-        response = publish_message(article_url, article_title, article_summary)
 
+        if "Messages" in res:
+            message = res["Messages"][0]
+
+            # メッセージ本文からURLを取得
+            message_body = json.loads(message["Body"])
+            article_url = message_body["url"]
+
+            print(f"Processing article URL: {article_url}")
+
+            # メッサージをキューから削除
+            receipt_handle = message["ReceiptHandle"]
+            sqs.delete_message(
+                QueueUrl=queue_url,
+                ReceiptHandle=receipt_handle
+            )
+
+            # スクレイピング処理に記事URLを連携
+            article_title, article_text = scraping_article(article_url)
+            article_summary = generate_summary(article_text)
+            response = publish_message(article_url, article_title, article_summary)
+
+            return {
+                "statusCode": 200,
+                "body": "OK"
+            }
+        else:
+            print("No messages in queue")
+            return {
+                "statusCode": 200,
+                "body": "No messages to process"
+            }
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
         return {
-            "statusCode": 200,
-            "body": "OK"
+            "statusCode": 500,
+            "body": str(e)
         }
-
 
 # 記事本文のスクレイピング
 def scraping_article(article_url):
-    html = requests.get(article_url).content
-    soup = BeautifulSoup(html, "html.parser")
-    # 記事のタイトルを取得
-    article_title = soup.find("title").get_text()
-    # 不要な文章をクラスで指定
-    exclude_classes = [
-        "blocks", "copyright", "events", "posts", "post-content",
-        "related", "share-navigation", "sub-content"
-    ]
-    exclude_divs = soup.find_all("div", class_=exclude_classes)
-    if exclude_divs:
-        for exclude_div in exclude_divs:
-            exclude_div.extract()
-    article_text = soup.body.get_text()
-
-    return article_title, article_text
+    try:
+        response = requests.get(article_url, timeout=10)
+        response.raise_for_status()
+        html = response.content
+        soup = BeautifulSoup(html, "html.parser")
+        
+        # 記事のタイトルを取得
+        article_title = soup.find("title").get_text() if soup.find("title") else "No title found"
+        
+        # 記事本文を取得（この部分は実際のウェブサイトの構造に合わせて調整が必要）
+        article_text = soup.find("main").get_text() if soup.find("main") else "No content found"
+        
+        return article_title, article_text
+    except Exception as e:
+        print(f"Error in scraping article: {str(e)}")
+        raise
 
 
 # 文章要約
 def generate_summary(text):
     input_text = (
-        "\n\nHuman: You are an IT engineer."
-        "Summarize the following article_text and write up to 5 sentences in the form of a response example."
-        "In addition, please translate language other than Japanese to Japanese and output."
-        "\n\narticle_text: {}\n\nresponse example:"
-        "- first sentence\n- second sentence\n- third sentence\n- forth sentense\n- fifth sentence\n\nAssistant:"
+        "\n\nHuman: あなたはITエンジニアです。"
+        "以下の記事を要約し、PREP法（要点、理由、例、まとめ）を使用して構造化してください。"
+        "各セクションは1-2文で簡潔にまとめ、全体で最大5文になるようにしてください。"
+        "日本語以外の言語が含まれている場合は、日本語に翻訳して出力してください。"
+        "\n\narticle_text: {}\n\n"
+        "回答例:"
+        "要点: [記事の主要なポイントを1文で]\n"
+        "理由: [そのポイントが重要である理由を1文で]\n"
+        "例: [具体的な例や詳細を1文で]\n"
+        "まとめ: [結論や実践的なアドバイスを1-2文で]\n\n"
+        "Assistant:"
     ).format(text)
-
     request_body = json.dumps(
         {
             "prompt": input_text,
@@ -95,7 +118,7 @@ def generate_summary(text):
     return response_body
 
 
-# 要約結果をEメール送信
+## 要約結果をEメール送信
 def publish_message(article_url, article_title, article_summary):
     message = (
         "article_url: {}\narticle_title: {}\narticle_summary: {}"
