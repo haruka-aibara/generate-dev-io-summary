@@ -63,3 +63,13 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_scraper" {
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.daily_scraper.arn
 }
+
+# AWS Chatbot Slackモジュールの呼び出し
+module "chatbot_slack" {
+  source             = "./modules/chatbot" # モジュールのパスを指定
+  configuration_name = local.app_name
+  slack_channel_id   = local.slack_channel_id
+  slack_workspace_id = local.slack_workspace_id
+  sns_topic_arns     = [module.sns.topic_arn]
+  logging_level      = "NONE"
+}

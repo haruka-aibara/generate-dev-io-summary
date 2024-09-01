@@ -15,3 +15,13 @@ variable "topic_name" {
   type        = string
   default     = "dev_io_summary_topic"
 }
+
+variable "slack_channel_id" {
+  type        = string
+  description = "The ID of the Slack channel"
+  }
+
+variable "slack_workspace_id" {
+  type        = string
+  description = "The ID of the Slack workspace"
+}
