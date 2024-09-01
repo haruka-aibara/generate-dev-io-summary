@@ -19,7 +19,7 @@ module "scraper_lambda" {
   handler                = "lambda_function.lambda_handler"
   runtime                = "python3.12"
   role_arn               = module.iam.lambda_role_arn
-  timeout                = 180
+  timeout                = 30
   layer_zip_path         = data.archive_file.lambda_layer.output_path
   layer_source_code_hash = data.archive_file.lambda_layer.output_base64sha256
   environment_variables = {
@@ -34,7 +34,7 @@ module "summarizer_lambda" {
   handler                = "lambda_function.lambda_handler"
   runtime                = "python3.12"
   role_arn               = module.iam.lambda_role_arn
-  timeout                = 30
+  timeout                = 300
   layer_zip_path         = data.archive_file.lambda_layer.output_path
   layer_source_code_hash = data.archive_file.lambda_layer.output_base64sha256
 

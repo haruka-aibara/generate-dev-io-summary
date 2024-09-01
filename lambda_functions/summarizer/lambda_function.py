@@ -14,46 +14,46 @@ bedrock_runtime = boto3.client("bedrock-runtime",region_name="ap-northeast-1")
 
 def lambda_handler(event, context):
     try:
-        res = sqs.receive_message(
-            QueueUrl=queue_url,
-            AttributeNames=["All"],
-            MessageAttributeNames=["All"],
-            MaxNumberOfMessages=1,
-            VisibilityTimeout=30,
-            WaitTimeSeconds=0
-        )
-
-        if "Messages" in res:
-            message = res["Messages"][0]
-
-            # メッセージ本文からURLを取得
-            message_body = json.loads(message["Body"])
-            article_url = message_body["url"]
-
-            print(f"Processing article URL: {article_url}")
-
-            # メッサージをキューから削除
-            receipt_handle = message["ReceiptHandle"]
-            sqs.delete_message(
+        processed_count = 0
+        while True:
+            res = sqs.receive_message(
                 QueueUrl=queue_url,
-                ReceiptHandle=receipt_handle
+                AttributeNames=["All"],
+                MessageAttributeNames=["All"],
+                MaxNumberOfMessages=10,  # 最大10件のメッセージを取得
+                VisibilityTimeout=30,
+                WaitTimeSeconds=0
             )
 
-            # スクレイピング処理に記事URLを連携
-            article_title, article_text = scraping_article(article_url)
-            article_summary = generate_summary(article_text)
-            response = publish_message(article_url, article_title, article_summary)
+            if "Messages" not in res:
+                print(f"No more messages in queue. Processed {processed_count} messages.")
+                break
 
-            return {
-                "statusCode": 200,
-                "body": "OK"
-            }
-        else:
-            print("No messages in queue")
-            return {
-                "statusCode": 200,
-                "body": "No messages to process"
-            }
+            for message in res["Messages"]:
+                # メッセージ本文からURLを取得
+                message_body = json.loads(message["Body"])
+                article_url = message_body["url"]
+
+                print(f"Processing article URL: {article_url}")
+
+                # スクレイピング処理に記事URLを連携
+                article_title, article_text = scraping_article(article_url)
+                article_summary = generate_summary(article_text)
+                publish_message(article_url, article_title, article_summary)
+
+                # メッセージをキューから削除
+                receipt_handle = message["ReceiptHandle"]
+                sqs.delete_message(
+                    QueueUrl=queue_url,
+                    ReceiptHandle=receipt_handle
+                )
+
+                processed_count += 1
+
+        return {
+            "statusCode": 200,
+            "body": f"Processed {processed_count} messages"
+        }
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
