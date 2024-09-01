@@ -120,13 +120,21 @@ def generate_summary(text):
 
 ## 要約結果をEメール送信
 def publish_message(article_url, article_title, article_summary):
-    message = (
-        "article_url: {}\narticle_title: {}\narticle_summary: {}"
-    ).format(article_url, article_title, article_summary["completion"])
+    message = {
+        "version": "1.0",
+        "source": "custom",
+        "content": {
+            "description": f":newspaper: *昨日 Developers.io に投稿された記事の要約をお届けします*\n\n"
+                           f":link: *記事URL:* {article_url}\n"
+                           f":book: *タイトル:* {article_title}\n\n"
+                           f":memo: *要約:*\n{article_summary['completion']}\n\n"
+                           f"---\nこの要約は自動生成されました。詳細は元の記事をご確認ください。"
+        }
+    }
+    
     response = sns.publish(
         TopicArn=topic_arn,
-        Message=message,
-        Subject="dev-io-summary"
+        Message=json.dumps(message)
     )
 
     return response
