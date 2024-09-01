@@ -42,5 +42,8 @@ terraform.rc
 lambda_functions/lambda_layer
 
 # archive files
+lambda_functions/archive_files
+
+# archive files
 lambda_functions/scraper/lambda_function.zip 
 lambda_functions/summarizer/lambda_function.zip 

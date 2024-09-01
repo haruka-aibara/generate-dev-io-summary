@@ -13,28 +13,30 @@ module "sns" {
 }
 
 module "scraper_lambda" {
-  source         = "./modules/lambda"
-  filename       = data.archive_file.lambda_scraper.output_path
-  function_name  = "dev_io_scraper"
-  handler        = "lambda_function.lambda_handler"
-  runtime        = "python3.12"
-  role_arn       = module.iam.lambda_role_arn
-  timeout        = 180
-  layer_zip_path = data.archive_file.lambda_layer_scraper.output_path
+  source                 = "./modules/lambda"
+  filename               = data.archive_file.lambda_scraper.output_path
+  function_name          = "dev_io_scraper"
+  handler                = "lambda_function.lambda_handler"
+  runtime                = "python3.12"
+  role_arn               = module.iam.lambda_role_arn
+  timeout                = 180
+  layer_zip_path         = data.archive_file.lambda_layer.output_path
+  layer_source_code_hash = data.archive_file.lambda_layer.output_base64sha256
   environment_variables = {
     QUEUE_URL = module.sqs.queue_url
   }
 }
 
 module "summarizer_lambda" {
-  source         = "./modules/lambda"
-  filename       = data.archive_file.lambda_summarizer.output_path
-  function_name  = "dev_io_summarizer"
-  handler        = "lambda_function.lambda_handler"
-  runtime        = "python3.12"
-  role_arn       = module.iam.lambda_role_arn
-  timeout        = 30
-  layer_zip_path = data.archive_file.lambda_layer_summarizer.output_path
+  source                 = "./modules/lambda"
+  filename               = data.archive_file.lambda_summarizer.output_path
+  function_name          = "dev_io_summarizer"
+  handler                = "lambda_function.lambda_handler"
+  runtime                = "python3.12"
+  role_arn               = module.iam.lambda_role_arn
+  timeout                = 30
+  layer_zip_path         = data.archive_file.lambda_layer.output_path
+  layer_source_code_hash = data.archive_file.lambda_layer.output_base64sha256
 
   environment_variables = {
     QUEUE_URL = module.sqs.queue_url

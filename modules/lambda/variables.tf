@@ -29,3 +29,7 @@ variable "environment_variables" {
 variable "layer_zip_path" {
   type = string
 }
+
+variable "layer_source_code_hash" {
+  type = string
+}
