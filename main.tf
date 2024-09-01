@@ -44,10 +44,11 @@ module "summarizer_lambda" {
   }
 }
 
+# Scraper resources
 resource "aws_cloudwatch_event_rule" "daily_scraper" {
   name                = "dev_io_daily_scraper"
   description         = "Triggers the Dev.to scraper Lambda function daily"
-  schedule_expression = "cron(0 1 * * ? *)" # Runs daily at 1:00 AM UTC
+  schedule_expression = "cron(25 23 * * ? *)" # Runs daily at 8:25 AM JST
 }
 
 resource "aws_cloudwatch_event_target" "scraper_lambda_target" {
@@ -64,9 +65,29 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_scraper" {
   source_arn    = aws_cloudwatch_event_rule.daily_scraper.arn
 }
 
-# AWS Chatbot Slackモジュールの呼び出し
+# Summarizer resources
+resource "aws_cloudwatch_event_rule" "daily_summarizer" {
+  name                = "dev_io_daily_summarizer"
+  description         = "Triggers the Dev.to summarizer Lambda function daily"
+  schedule_expression = "cron(30 23 * * ? *)" # Runs daily at 8:30 AM JST
+}
+
+resource "aws_cloudwatch_event_target" "summarizer_lambda_target" {
+  rule      = aws_cloudwatch_event_rule.daily_summarizer.name
+  target_id = "SummarizerLambda"
+  arn       = module.summarizer_lambda.function_arn
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_summarizer" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = module.summarizer_lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.daily_summarizer.arn
+}
+
 module "chatbot_slack" {
-  source             = "./modules/chatbot" # モジュールのパスを指定
+  source             = "./modules/chatbot"
   configuration_name = local.app_name
   slack_channel_id   = local.slack_channel_id
   slack_workspace_id = local.slack_workspace_id
