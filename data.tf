@@ -2,7 +2,7 @@
 data "archive_file" "lambda_layer" {
   type        = "zip"
   source_dir  = "lambda_functions/lambda_layer"
-  output_path = "lambda_functions/archive_files/lambda_layer.zip"
+  output_path = "lambda_functions/lambda_layer/lambda_layer.zip"
   depends_on  = [null_resource.pip_install]
 }
 
