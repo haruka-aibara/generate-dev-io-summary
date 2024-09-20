@@ -2,7 +2,7 @@
 terraform {
 
   cloud {
-    organization = "aibara-ha"
+    organization = "haruka_aibara"
     workspaces {
       name = "bedrock-slack-ai-chatbot"
     }
