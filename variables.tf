@@ -25,11 +25,3 @@ variable "slack_workspace_id" {
   type        = string
   description = "The ID of the Slack workspace"
 }
-
-variable "TFC_AWS_PROVIDER_AUTH" {
-  type = string
-}
-
-variable "TFC_AWS_RUN_ROLE_ARN" {
-  type = string
-}
