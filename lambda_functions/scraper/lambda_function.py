@@ -15,18 +15,18 @@ main_url = "https://dev.classmethod.jp"
 
 def clean_url(url):
     # URLから改行とスペースを削除
-    url = re.sub(r'\s+', '', url)
+    url = re.sub(r"\s+", "", url)
     # 先頭と末尾のスラッシュを確認
-    if not url.startswith('https://'):
-        url = 'https://' + url.lstrip('/')
-    return url.rstrip('/')
+    if not url.startswith("https://"):
+        url = "https://" + url.lstrip("/")
+    return url.rstrip("/")
 
 
 def lambda_handler(event, context):
     try:
         # 昨日の日付をターゲットに設定
         t_delta = timedelta(hours=9)
-        JST = timezone(t_delta, 'JST')
+        JST = timezone(t_delta, "JST")
         yesterday_date = datetime.now(JST) - timedelta(1)
         target_date = yesterday_date.strftime("%Y.%m.%d")
 
@@ -60,10 +60,7 @@ def lambda_handler(event, context):
 
                         # SQSへ記事のURLを送信
                         message_body = json.dumps({"url": article_url})
-                        response = sqs.send_message(
-                            QueueUrl=queue_url,
-                            MessageBody=message_body
-                        )
+                        response = sqs.send_message(QueueUrl=queue_url, MessageBody=message_body)
                         print(f"Sent message to SQS: {response}")
                     else:
                         print("Link not found in the article")
@@ -75,12 +72,12 @@ def lambda_handler(event, context):
         print(f"Total articles found: {articles_found}")
 
         return {
-            'statusCode': 200,
-            'body': f"Completed. Found {articles_found} articles.",
+            "statusCode": 200,
+            "body": f"Completed. Found {articles_found} articles.",
         }
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         return {
-            'statusCode': 500,
-            'body': str(e),
+            "statusCode": 500,
+            "body": str(e),
         }

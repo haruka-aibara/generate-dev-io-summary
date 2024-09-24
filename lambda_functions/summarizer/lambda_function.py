@@ -24,7 +24,7 @@ def lambda_handler(event, context):
                 MessageAttributeNames=["All"],
                 MaxNumberOfMessages=10,  # 最大10件のメッセージを取得
                 VisibilityTimeout=30,
-                WaitTimeSeconds=0
+                WaitTimeSeconds=0,
             )
 
             if "Messages" not in res:
@@ -45,24 +45,15 @@ def lambda_handler(event, context):
 
                 # メッセージをキューから削除
                 receipt_handle = message["ReceiptHandle"]
-                sqs.delete_message(
-                    QueueUrl=queue_url,
-                    ReceiptHandle=receipt_handle
-                )
+                sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
 
                 processed_count += 1
 
-        return {
-            "statusCode": 200,
-            "body": f"Processed {processed_count} messages"
-        }
+        return {"statusCode": 200, "body": f"Processed {processed_count} messages"}
 
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": str(e)
-        }
+        return {"statusCode": 500, "body": str(e)}
 
 
 # 記事本文のスクレイピング
@@ -107,14 +98,11 @@ def generate_summary(text):
             "temperature": 0.5,
             "top_k": 250,
             "top_p": 1,
-            "anthropic_version": "bedrock-2023-05-31"
+            "anthropic_version": "bedrock-2023-05-31",
         }
     )
     response = bedrock_runtime.invoke_model(
-        modelId="anthropic.claude-instant-v1",
-        body=request_body,
-        accept="*/*",
-        contentType="application/json"
+        modelId="anthropic.claude-instant-v1", body=request_body, accept="*/*", contentType="application/json"
     )
     response_body = json.loads(response.get("body").read())
 
@@ -128,16 +116,13 @@ def publish_message(article_url, article_title, article_summary):
         "source": "custom",
         "content": {
             "description": f":newspaper: *昨日 Developers.io に投稿された記事の要約をお届けします*\n\n"
-                           f":link: *記事URL:* {article_url}\n"
-                           f":book: *タイトル:* {article_title}\n\n"
-                           f":memo: *要約:*\n{article_summary['completion']}\n\n"
-                           f"---\nこの要約は自動生成されました。詳細は元の記事をご確認ください。"
-        }
+            f":link: *記事URL:* {article_url}\n"
+            f":book: *タイトル:* {article_title}\n\n"
+            f":memo: *要約:*\n{article_summary['completion']}\n\n"
+            f"---\nこの要約は自動生成されました。詳細は元の記事をご確認ください。"
+        },
     }
 
-    response = sns.publish(
-        TopicArn=topic_arn,
-        Message=json.dumps(message)
-    )
+    response = sns.publish(TopicArn=topic_arn, Message=json.dumps(message))
 
     return response
