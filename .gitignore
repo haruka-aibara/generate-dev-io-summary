@@ -39,3 +39,8 @@ terraform.rc
 # archive files
 lambda_functions/scraper/lambda_function.zip 
 lambda_functions/summarizer/lambda_function.zip 
+
+# uv
+.python-version
+pyproject.toml
+uv.lock
