@@ -1,15 +1,17 @@
-import boto3
 import json
 import os
+import re
+from datetime import datetime, timedelta, timezone
+
+import boto3
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta, timezone
-import re
 
 # キュー情報を設定
 queue_url = os.environ["QUEUE_URL"]
 sqs = boto3.client("sqs", region_name="ap-northeast-1")
 main_url = "https://dev.classmethod.jp"
+
 
 def clean_url(url):
     # URLから改行とスペースを削除
@@ -18,6 +20,7 @@ def clean_url(url):
     if not url.startswith('https://'):
         url = 'https://' + url.lstrip('/')
     return url.rstrip('/')
+
 
 def lambda_handler(event, context):
     try:
@@ -34,10 +37,10 @@ def lambda_handler(event, context):
         response.raise_for_status()
         html = response.content
         soup = BeautifulSoup(html, "html.parser")
-        
+
         # 記事コンテナを見つける
         articles = soup.find_all("div", class_="flex flex-col bg-white rounded")
-        
+
         print(f"Number of articles found: {len(articles)}")
 
         articles_found = 0

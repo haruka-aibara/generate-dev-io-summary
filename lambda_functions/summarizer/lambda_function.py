@@ -1,16 +1,18 @@
-import boto3
 import json
 import os
+import urllib.parse
+
+import boto3
 import requests
 from bs4 import BeautifulSoup
-import urllib.parse
 
 # キュー情報を設定
 queue_url = os.environ["QUEUE_URL"]
 topic_arn = os.environ["TOPIC_ARN"]
 sqs = boto3.client("sqs", region_name="ap-northeast-1")
 sns = boto3.client("sns", region_name="ap-northeast-1")
-bedrock_runtime = boto3.client("bedrock-runtime",region_name="ap-northeast-1")
+bedrock_runtime = boto3.client("bedrock-runtime", region_name="ap-northeast-1")
+
 
 def lambda_handler(event, context):
     try:
@@ -62,6 +64,7 @@ def lambda_handler(event, context):
             "body": str(e)
         }
 
+
 # 記事本文のスクレイピング
 def scraping_article(article_url):
     try:
@@ -69,13 +72,13 @@ def scraping_article(article_url):
         response.raise_for_status()
         html = response.content
         soup = BeautifulSoup(html, "html.parser")
-        
+
         # 記事のタイトルを取得
         article_title = soup.find("title").get_text() if soup.find("title") else "No title found"
-        
+
         # 記事本文を取得（この部分は実際のウェブサイトの構造に合わせて調整が必要）
         article_text = soup.find("main").get_text() if soup.find("main") else "No content found"
-        
+
         return article_title, article_text
     except Exception as e:
         print(f"Error in scraping article: {str(e)}")
@@ -118,7 +121,7 @@ def generate_summary(text):
     return response_body
 
 
-## 要約結果をEメール送信
+# 要約結果をEメール送信
 def publish_message(article_url, article_title, article_summary):
     message = {
         "version": "1.0",
@@ -131,7 +134,7 @@ def publish_message(article_url, article_title, article_summary):
                            f"---\nこの要約は自動生成されました。詳細は元の記事をご確認ください。"
         }
     }
-    
+
     response = sns.publish(
         TopicArn=topic_arn,
         Message=json.dumps(message)
