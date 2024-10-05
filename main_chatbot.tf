@@ -1,6 +1,4 @@
-module "chatbot_slack" {
-  source = "./modules/chatbot"
-
+resource "aws_chatbot_slack_channel_configuration" "this" {
   configuration_name          = local.app_name
   iam_role_arn                = aws_iam_role.chatbot.arn
   slack_channel_id            = local.slack_channel_id
@@ -10,5 +8,4 @@ module "chatbot_slack" {
   sns_topic_arns              = [aws_sns_topic.this.arn]
   tags                        = null
   user_authorization_required = false
-
 }

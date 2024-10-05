@@ -8,15 +8,18 @@ resource "aws_lambda_layer_version" "layer" {
 }
 
 resource "aws_lambda_function" "this" {
-  filename         = var.filename
-  function_name    = var.function_name
-  role             = var.role_arn
+
+  function_name = var.function_name
+  role          = var.role
+
+  # architectures = ["x86_64"]
+
   handler          = var.handler
   runtime          = var.runtime
   timeout          = var.timeout
   layers           = [aws_lambda_layer_version.layer.arn]
   source_code_hash = filebase64sha256(var.filename)
-
+  filename         = var.filename
   environment {
     variables = var.environment_variables
   }
