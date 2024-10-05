@@ -43,16 +43,16 @@ resource "aws_iam_role_policy" "chatbot_policy" {
         ]
         Resource = var.sns_topic_arns
       },
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:DescribeLogStreams"
-        ]
-        Resource = "arn:aws:logs:*:*:*"
-      }
+      # {
+      #   Effect = "Allow"
+      #   Action = [
+      #     "logs:CreateLogGroup",
+      #     "logs:CreateLogStream",
+      #     "logs:PutLogEvents",
+      #     "logs:DescribeLogStreams"
+      #   ]
+      #   Resource = "arn:aws:logs:*:*:*"
+      # }
     ]
   })
 }
