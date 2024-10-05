@@ -5,7 +5,7 @@ resource "aws_chatbot_slack_channel_configuration" "this" {
   iam_role_arn          = aws_iam_role.chatbot_role.arn
   sns_topic_arns        = var.sns_topic_arns
   logging_level         = var.logging_level
-  guardrail_policy_arns = [aws_iam_role.chatbot_role.arn]
+  guardrail_policy_arns = [aws_iam_role_policy.chatbot_policy.arn]
 }
 
 resource "aws_iam_role" "chatbot_role" {
