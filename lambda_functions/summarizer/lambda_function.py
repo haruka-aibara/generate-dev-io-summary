@@ -112,6 +112,7 @@ def generate_summary(text):
         f"理由: [そのポイントが重要である理由を1文で]\n"
         f"例: [具体的な例や詳細を1文で]\n"
         f"まとめ: [結論や実践的なアドバイスを1-2文で]\n\n"
+        f"Assistant:"
     )
     request_body = json.dumps(
         {
