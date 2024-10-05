@@ -48,7 +48,7 @@ module "summarizer_lambda" {
 resource "aws_cloudwatch_event_rule" "daily_scraper" {
   name                = "dev_io_daily_scraper"
   description         = "Triggers the Dev.to scraper Lambda function daily"
-  schedule_expression = "cron(25 21 * * ? *)" # Runs daily at 8:25 AM JST
+  schedule_expression = "cron(25 21 * * ? *)" # Runs daily at 6:25 AM JST
 }
 
 resource "aws_cloudwatch_event_target" "scraper_lambda_target" {
@@ -69,7 +69,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_scraper" {
 resource "aws_cloudwatch_event_rule" "daily_summarizer" {
   name                = "dev_io_daily_summarizer"
   description         = "Triggers the Dev.to summarizer Lambda function daily"
-  schedule_expression = "cron(30 21 * * ? *)" # Runs daily at 8:30 AM JST
+  schedule_expression = "cron(30 21 * * ? *)" # Runs daily at 6:30 AM JST
 }
 
 resource "aws_cloudwatch_event_target" "summarizer_lambda_target" {
