@@ -24,6 +24,7 @@ module "scraper_lambda" {
   layer_source_code_hash = data.archive_file.lambda_layer.output_base64sha256
   environment_variables = {
     QUEUE_URL = module.sqs.queue_url
+    MAIN_URL  = local.developers_io_url
   }
 }
 
