@@ -42,6 +42,7 @@ module "summarizer_lambda" {
   environment_variables = {
     QUEUE_URL = module.sqs.queue_url
     TOPIC_ARN = module.sns.topic_arn
+    MODEL_ID  = local.bedrock_model_id
   }
 }
 

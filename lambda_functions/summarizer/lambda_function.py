@@ -14,6 +14,7 @@ logger.setLevel(logging.INFO)
 # 環境変数とAWSリソースの設定
 queue_url = os.environ["QUEUE_URL"]
 topic_arn = os.environ["TOPIC_ARN"]
+model_id = os.environ["MODEL_ID"]
 sqs = boto3.client("sqs")
 sns = boto3.client("sns")
 bedrock_runtime = boto3.client("bedrock-runtime")
