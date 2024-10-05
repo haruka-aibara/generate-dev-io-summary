@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import urllib.parse
+from datetime import datetime, timedelta, timezone
 
 import boto3
 import requests
@@ -137,11 +138,16 @@ def generate_summary(text):
 
 # 要約結果をEメール送信
 def publish_message(article_url, article_title, article_summary):
+    # 日本時間で前日の日付を取得
+    jst = timezone(timedelta(hours=9))
+    yesterday = datetime.now(jst) - timedelta(days=1)
+    formatted_date = yesterday.strftime("%Y年%m月%d日")
+
     message = {
         "version": "1.0",
         "source": "custom",
         "content": {
-            "description": f":newspaper: *昨日 Developers.io に投稿された記事の要約をお届けします*\n\n"
+            "description": f":newspaper: *{formatted_date}に Developers.io に投稿された記事の要約をお届けします*\n\n"
             f":link: *記事URL:* {article_url}\n"
             f":book: *タイトル:* {article_title}\n\n"
             f":memo: *要約:*\n{article_summary['completion']}\n\n"
