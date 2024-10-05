@@ -39,7 +39,7 @@ def lambda_handler(event, context):
         soup = BeautifulSoup(html, "html.parser")
 
         # 記事コンテナを見つける
-        articles = soup.find_all("div", class_="flex flex-col bg-white rounded")
+        articles = soup.find_all("div", class_="flex flex-col rounded")
 
         print(f"Number of articles found: {len(articles)}")
 
