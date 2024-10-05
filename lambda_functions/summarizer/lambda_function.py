@@ -53,10 +53,15 @@ def lambda_handler(event, context):
                 sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
 
                 processed_count += 1
-                logger.info({"message": "Article processed", "article_url": article_url, "processed_count": processed_count})
+                logger.info(
+                    {"message": "Article processed", "article_url": article_url, "processed_count": processed_count}
+                )
 
         logger.info({"message": "Lambda execution completed", "total_processed": processed_count})
-        return {"statusCode": 200, "body": json.dumps({"message": "Execution completed", "processed_count": processed_count})}
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"message": "Execution completed", "processed_count": processed_count}),
+        }
 
     except Exception as e:
         logger.error({"message": "An error occurred", "error": str(e)}, exc_info=True)
@@ -77,10 +82,19 @@ def scraping_article(article_url):
         # 記事本文を取得（この部分は実際のウェブサイトの構造に合わせて調整が必要）
         article_text = soup.find("main").get_text() if soup.find("main") else "No content found"
 
-        logger.info({"message": "Article scraped successfully", "article_url": article_url, "title_length": len(article_title), "content_length": len(article_text)})
+        logger.info(
+            {
+                "message": "Article scraped successfully",
+                "article_url": article_url,
+                "title_length": len(article_title),
+                "content_length": len(article_text),
+            }
+        )
         return article_title, article_text
     except Exception as e:
-        logger.error({"message": "Error in scraping article", "article_url": article_url, "error": str(e)}, exc_info=True)
+        logger.error(
+            {"message": "Error in scraping article", "article_url": article_url, "error": str(e)}, exc_info=True
+        )
         raise
 
 
@@ -114,7 +128,7 @@ def generate_summary(text):
             modelId="anthropic.claude-instant-v1", body=request_body, accept="*/*", contentType="application/json"
         )
         response_body = json.loads(response.get("body").read())
-        logger.info({"message": "Summary generated successfully", "summary_length": len(response_body['completion'])})
+        logger.info({"message": "Summary generated successfully", "summary_length": len(response_body["completion"])})
         return response_body
     except Exception as e:
         logger.error({"message": "Error in generating summary", "error": str(e)}, exc_info=True)
@@ -137,8 +151,12 @@ def publish_message(article_url, article_title, article_summary):
 
     try:
         response = sns.publish(TopicArn=topic_arn, Message=json.dumps(message))
-        logger.info({"message": "Message published to SNS", "article_url": article_url, "message_id": response['MessageId']})
+        logger.info(
+            {"message": "Message published to SNS", "article_url": article_url, "message_id": response["MessageId"]}
+        )
         return response
     except Exception as e:
-        logger.error({"message": "Error in publishing message", "article_url": article_url, "error": str(e)}, exc_info=True)
+        logger.error(
+            {"message": "Error in publishing message", "article_url": article_url, "error": str(e)}, exc_info=True
+        )
         raise
