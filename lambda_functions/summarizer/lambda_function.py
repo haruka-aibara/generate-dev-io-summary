@@ -14,9 +14,9 @@ logger.setLevel(logging.INFO)
 # 環境変数とAWSリソースの設定
 queue_url = os.environ["QUEUE_URL"]
 topic_arn = os.environ["TOPIC_ARN"]
-sqs = boto3.client("sqs", region_name="ap-northeast-1")
-sns = boto3.client("sns", region_name="ap-northeast-1")
-bedrock_runtime = boto3.client("bedrock-runtime", region_name="ap-northeast-1")
+sqs = boto3.client("sqs")
+sns = boto3.client("sns")
+bedrock_runtime = boto3.client("bedrock-runtime")
 
 
 def lambda_handler(event, context):
