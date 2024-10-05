@@ -1,5 +1,6 @@
 module "iam" {
-  source = "./modules/iam"
+  source   = "./modules/iam"
+  model_id = local.bedrock_model_id
 }
 
 module "sqs" {
