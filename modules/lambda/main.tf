@@ -1,7 +1,7 @@
 resource "aws_lambda_layer_version" "layer" {
   filename                 = var.layer_zip_path
   layer_name               = "${var.function_name}_layer"
-  compatible_runtimes      = ["python3.9", "python3.12"]
+  compatible_runtimes      = ["python3.12"]
   compatible_architectures = ["x86_64"]
   description              = "Lambda layer for ${var.function_name}"
   source_code_hash         = var.layer_source_code_hash

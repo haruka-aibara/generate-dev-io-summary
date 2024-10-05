@@ -1,10 +1,11 @@
 resource "aws_chatbot_slack_channel_configuration" "this" {
-  configuration_name = var.configuration_name
-  slack_channel_id   = var.slack_channel_id
-  slack_team_id      = var.slack_workspace_id
-  iam_role_arn       = aws_iam_role.chatbot_role.arn
-  sns_topic_arns     = var.sns_topic_arns
-  logging_level      = var.logging_level
+  configuration_name    = var.configuration_name
+  slack_channel_id      = var.slack_channel_id
+  slack_team_id         = var.slack_workspace_id
+  iam_role_arn          = aws_iam_role.chatbot_role.arn
+  sns_topic_arns        = var.sns_topic_arns
+  logging_level         = var.logging_level
+  guardrail_policy_arns = [aws_iam_role.chatbot_role.arn]
 }
 
 resource "aws_iam_role" "chatbot_role" {
