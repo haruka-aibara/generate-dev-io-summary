@@ -2,58 +2,52 @@ resource "aws_chatbot_slack_channel_configuration" "this" {
   configuration_name    = var.configuration_name
   slack_channel_id      = var.slack_channel_id
   slack_team_id         = var.slack_workspace_id
-  iam_role_arn          = aws_iam_role.chatbot_role.arn
+  iam_role_arn          = aws_iam_role.chatbot.arn
   sns_topic_arns        = var.sns_topic_arns
   logging_level         = var.logging_level
-  guardrail_policy_arns = [aws_iam_role_policy.chatbot_policy.arn]
+  guardrail_policy_arns = [aws_iam_policy.chatbot.arn]
 }
 
-resource "aws_iam_role" "chatbot_role" {
-  name = "${var.configuration_name}-chatbot-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "chatbot.amazonaws.com"
-        }
-      }
-    ]
-  })
+resource "aws_iam_role" "chatbot" {
+  name               = "${var.configuration_name}-chatbot-role"
+  assume_role_policy = data.aws_iam_policy_document.chatbot_assume_role.json
 }
 
-resource "aws_iam_role_policy" "chatbot_policy" {
-  name = "${var.configuration_name}-chatbot-policy"
-  role = aws_iam_role.chatbot_role.id
+data "aws_iam_policy_document" "chatbot_assume_role" {
+  statement {
+    effect = "Allow"
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "sns:GetTopicAttributes",
-          "sns:SetTopicAttributes",
-          "sns:AddPermission",
-          "sns:RemovePermission",
-          "sns:DeleteTopic",
-          "sns:ListSubscriptionsByTopic"
-        ]
-        Resource = var.sns_topic_arns
-      },
-      # {
-      #   Effect = "Allow"
-      #   Action = [
-      #     "logs:CreateLogGroup",
-      #     "logs:CreateLogStream",
-      #     "logs:PutLogEvents",
-      #     "logs:DescribeLogStreams"
-      #   ]
-      #   Resource = "arn:aws:logs:*:*:*"
-      # }
+    principals {
+      type        = "Service"
+      identifiers = ["chatbot.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "chatbot" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "sns:GetTopicAttributes",
+      "sns:SetTopicAttributes",
+      "sns:AddPermission",
+      "sns:RemovePermission",
+      "sns:DeleteTopic",
+      "sns:ListSubscriptionsByTopic"
     ]
-  })
+    resources = var.sns_topic_arns
+  }
+}
+
+resource "aws_iam_policy" "chatbot" {
+  name        = "${var.configuration_name}-chatbot-policy"
+  description = "${var.configuration_name}-chatbot-policy"
+  policy      = data.aws_iam_policy_document.chatbot.json
+}
+
+resource "aws_iam_role_policy_attachment" "chatbot" {
+  role       = aws_iam_role.chatbot.name
+  policy_arn = aws_iam_policy.chatbot.arn
 }
