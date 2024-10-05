@@ -14,7 +14,7 @@ logger.setLevel(logging.INFO)
 
 # 環境変数とAWSリソースの設定
 queue_url = os.environ["QUEUE_URL"]
-sqs = boto3.client("sqs", region_name="ap-northeast-1")
+sqs = boto3.client("sqs")
 main_url = os.environ["MAIN_URL"]
 
 
