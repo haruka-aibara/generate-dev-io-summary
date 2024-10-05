@@ -4,7 +4,7 @@ terraform {
   cloud {
     organization = "haruka-aibara"
     workspaces {
-      name = "bedrock-slack-ai-chatbot"
+      name = "generate-dev-io-summary"
     }
   }
 

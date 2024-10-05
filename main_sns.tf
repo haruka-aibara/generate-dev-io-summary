@@ -1,3 +1,3 @@
 resource "aws_sns_topic" "this" {
-  name = var.name
+  name = var.topic_name
 }
