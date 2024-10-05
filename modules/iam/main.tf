@@ -16,7 +16,7 @@ resource "aws_iam_role" "lambda" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
-data "aws_iam_policy_document" "policy" {
+data "aws_iam_policy_document" "lambda" {
   statement {
     sid    = "sns"
     effect = "Allow"
