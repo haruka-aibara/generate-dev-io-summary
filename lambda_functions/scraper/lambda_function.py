@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 from datetime import datetime, timedelta, timezone
@@ -7,7 +8,11 @@ import boto3
 import requests
 from bs4 import BeautifulSoup
 
-# キュー情報を設定
+# ロガーの設定
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# 環境変数とAWSリソースの設定
 queue_url = os.environ["QUEUE_URL"]
 sqs = boto3.client("sqs", region_name="ap-northeast-1")
 main_url = "https://dev.classmethod.jp"
@@ -30,7 +35,7 @@ def lambda_handler(event, context):
         yesterday_date = datetime.now(JST) - timedelta(1)
         target_date = yesterday_date.strftime("%Y.%m.%d")
 
-        print(f"Target date: {target_date}")
+        logger.info({"message": "Starting article search", "target_date": target_date})
 
         # トップページから記事リンク一覧を取得
         response = requests.get(main_url)
@@ -40,44 +45,48 @@ def lambda_handler(event, context):
 
         # 記事コンテナを見つける
         articles = soup.find_all("div", class_="flex flex-col rounded")
-
-        print(f"Number of articles found: {len(articles)}")
+        logger.info({"message": "Articles found on main page", "count": len(articles)})
 
         articles_found = 0
-        for article in articles:
+        for index, article in enumerate(articles, 1):
             # 日付要素を取得
             date_elem = article.find("span", class_="text-xs text-gray-500")
-            if date_elem:
-                article_date = date_elem.text.strip()
-                print(f"Article date: {article_date}")
-                if article_date == target_date:
-                    # リンク要素を取得
-                    link = article.find("a")
-                    if link:
-                        article_url = clean_url(main_url + link["href"])
-                        print(f"Found matching article: {article_url}")
-                        articles_found += 1
+            if not date_elem:
+                logger.warning({"message": "Date element not found", "article_index": index})
+                continue
 
-                        # SQSへ記事のURLを送信
-                        message_body = json.dumps({"url": article_url})
-                        response = sqs.send_message(QueueUrl=queue_url, MessageBody=message_body)
-                        print(f"Sent message to SQS: {response}")
-                    else:
-                        print("Link not found in the article")
-                else:
-                    print("Date did not match target date")
-            else:
-                print("Date element not found in article")
+            article_date = date_elem.text.strip()
+            logger.debug({"message": "Processing article", "article_index": index, "article_date": article_date})
 
-        print(f"Total articles found: {articles_found}")
+            if article_date != target_date:
+                continue
 
-        return {
-            "statusCode": 200,
-            "body": f"Completed. Found {articles_found} articles.",
-        }
+            # リンク要素を取得
+            link = article.find("a")
+            if not link:
+                logger.warning({"message": "Link not found", "article_index": index})
+                continue
+
+            article_url = clean_url(main_url + link["href"])
+            articles_found += 1
+            logger.info({"message": "Matching article found", "article_index": index, "article_url": article_url})
+
+            # SQSへ記事のURLを送信
+            message_body = json.dumps({"url": article_url})
+            response = sqs.send_message(QueueUrl=queue_url, MessageBody=message_body)
+            logger.info(
+                {
+                    "message": "Message sent to SQS",
+                    "article_url": article_url,
+                    "sqs_message_id": response.get("MessageId"),
+                }
+            )
+
+        logger.info({"message": "Article search completed", "articles_found": articles_found})
+
+        return {"statusCode": 200, "body": json.dumps({"message": "Completed", "articles_found": articles_found})}
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": str(e),
-        }
+        logger.error(
+            {"message": "An error occurred", "error": str(e), "trace": logging.exception("Exception occurred")}
+        )
+        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
