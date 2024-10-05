@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import re
 from datetime import datetime, timedelta, timezone
@@ -7,10 +6,6 @@ from datetime import datetime, timedelta, timezone
 import boto3
 import requests
 from bs4 import BeautifulSoup
-
-# ログ設定
-logger = logging.getLogger()
-logger.setLevel("DEBUG")
 
 # キュー情報を設定
 queue_url = os.environ["QUEUE_URL"]
@@ -44,10 +39,7 @@ def lambda_handler(event, context):
         soup = BeautifulSoup(html, "html.parser")
 
         # 記事コンテナを見つける
-        articles = soup.find_all("div", class_="flex flex-col bg-white rounded")
-
-        logger.debug(soup)
-        logger.debug(articles)
+        articles = soup.find_all("div", class_="flex flex-col rounded")
 
         print(f"Number of articles found: {len(articles)}")
 
