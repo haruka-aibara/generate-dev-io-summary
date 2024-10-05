@@ -126,7 +126,7 @@ def generate_summary(text):
     )
     try:
         response = bedrock_runtime.invoke_model(
-            modelId="anthropic.claude-instant-v1", body=request_body, accept="*/*", contentType="application/json"
+            modelId=model_id, body=request_body, accept="*/*", contentType="application/json"
         )
         response_body = json.loads(response.get("body").read())
         logger.info({"message": "Summary generated successfully", "summary_length": len(response_body["completion"])})
