@@ -1,5 +1,4 @@
 ## For Chatbot
-
 resource "aws_iam_role" "chatbot" {
   name               = "${local.app_name}-chatbot-role"
   assume_role_policy = data.aws_iam_policy_document.chatbot_assume_role.json

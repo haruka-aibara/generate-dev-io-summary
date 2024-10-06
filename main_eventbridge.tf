@@ -8,7 +8,7 @@ resource "aws_cloudwatch_event_rule" "daily_summarizer" {
 resource "aws_cloudwatch_event_target" "summarizer_lambda_target" {
   rule      = aws_cloudwatch_event_rule.daily_summarizer.name
   target_id = "SummarizerLambda"
-  arn       = module.summarizer_lambda.function_arn
+  arn       = aws_lambda_function.summarizer.arn
 }
 
 # Scraper resources
@@ -21,5 +21,5 @@ resource "aws_cloudwatch_event_rule" "daily_scraper" {
 resource "aws_cloudwatch_event_target" "scraper_lambda_target" {
   rule      = aws_cloudwatch_event_rule.daily_scraper.name
   target_id = "ScraperLambda"
-  arn       = module.scraper_lambda.function_arn
+  arn       = aws_lambda_function.scraper.arn
 }
