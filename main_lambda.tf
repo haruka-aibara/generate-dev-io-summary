@@ -1,15 +1,15 @@
 resource "aws_lambda_layer_version" "scraper" {
   filename                 = data.archive_file.lambda_layer.output_path
-  layer_name               = "dev_io_scraper_layer"
+  layer_name               = "${local.scraper_name}_layer"
   compatible_runtimes      = ["python3.12"]
   compatible_architectures = ["x86_64"]
-  description              = "Lambda layer for dev_io_scraper"
+  description              = "Lambda layer for ${local.scraper_name}"
   source_code_hash         = data.archive_file.lambda_layer.output_base64sha256
 }
 
 resource "aws_lambda_function" "scraper" {
-  function_name = "dev_io_scraper"
-  role          = aws_iam_role.lambda.arn
+  function_name = local.scraper_name
+  role          = aws_iam_role.scraper.arn
 
   handler          = "lambda_function.lambda_handler"
   runtime          = "python3.12"
@@ -27,16 +27,16 @@ resource "aws_lambda_function" "scraper" {
 
 resource "aws_lambda_layer_version" "summarizer" {
   filename                 = data.archive_file.lambda_layer.output_path
-  layer_name               = "dev_io_summarizer_layer"
+  layer_name               = "${local.summarizer_name}_layer"
   compatible_runtimes      = ["python3.12"]
   compatible_architectures = ["x86_64"]
-  description              = "Lambda layer for dev_io_summarizer"
+  description              = "Lambda layer for ${local.summarizer_name}"
   source_code_hash         = data.archive_file.lambda_layer.output_base64sha256
 }
 
 resource "aws_lambda_function" "summarizer" {
-  function_name = "dev_io_summarizer"
-  role          = aws_iam_role.lambda.arn
+  function_name = local.summarizer_name
+  role          = aws_iam_role.summarizer.arn
 
   handler          = "lambda_function.lambda_handler"
   runtime          = "python3.12"
@@ -54,7 +54,7 @@ resource "aws_lambda_function" "summarizer" {
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_scraper" {
-  statement_id  = "AllowExecutionFromCloudWatch"
+  statement_id  = "${local.scraper_name}_AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.scraper.function_name
   principal     = "events.amazonaws.com"
@@ -62,7 +62,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_scraper" {
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_summarizer" {
-  statement_id  = "AllowExecutionFromCloudWatch"
+  statement_id  = "${local.summarizer_name}_AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.summarizer.function_name
   principal     = "events.amazonaws.com"

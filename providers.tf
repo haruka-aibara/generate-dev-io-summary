@@ -1,6 +1,6 @@
 # AWSプロバイダーの設定（東京リージョン）
 provider "aws" {
-  region = "ap-northeast-1"
+  region = var.region
   default_tags {
     tags = {
       Env     = "haruka-aibara"

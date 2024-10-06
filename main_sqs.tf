@@ -1,3 +1,3 @@
 resource "aws_sqs_queue" "this" {
-  name = var.queue_name
+  name = "${local.app_name}_queue"
 }
