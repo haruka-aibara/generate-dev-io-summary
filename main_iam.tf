@@ -94,13 +94,12 @@ data "aws_iam_policy_document" "lambda" {
     sid    = "logs"
     effect = "Allow"
     actions = [
-      "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
     resources = [
-      aws_cloudwatch_log_group.scraper.arn,
-      aws_cloudwatch_log_group.summarizer.arn
+      "${aws_cloudwatch_log_group.scraper.arn}:log-stream:*",
+      "${aws_cloudwatch_log_group.summarizer.arn}:log-stream:*"
     ]
   }
 }
