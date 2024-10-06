@@ -69,7 +69,7 @@ data "aws_iam_policy_document" "lambda" {
     actions = [
       "sns:Publish",
     ]
-    resources = ["*"]
+    resources = [aws_sns_topic.this.arn]
   }
   statement {
     sid    = "bedrock"
@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "lambda" {
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes",
     ]
-    resources = ["*"]
+    resources = [aws_sqs_queue.this.arn]
   }
   statement {
     sid    = "logs"
@@ -98,7 +98,10 @@ data "aws_iam_policy_document" "lambda" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = ["*"]
+    resources = [
+      aws_cloudwatch_log_group.scraper.arn,
+      aws_cloudwatch_log_group.summarizer.arn
+    ]
   }
 }
 
