@@ -1,6 +1,6 @@
 ## For Chatbot
 resource "aws_iam_role" "chatbot" {
-  name               = "${local.app_name}-chatbot-role"
+  name               = "${local.project_name}-chatbot-role"
   assume_role_policy = data.aws_iam_policy_document.chatbot_assume_role.json
 }
 
@@ -33,8 +33,8 @@ data "aws_iam_policy_document" "chatbot" {
 }
 
 resource "aws_iam_policy" "chatbot" {
-  name        = "${local.app_name}-chatbot-policy"
-  description = "${local.app_name}-chatbot-policy"
+  name        = "${local.project_name}-chatbot-policy"
+  description = "${local.project_name}-chatbot-policy"
   policy      = data.aws_iam_policy_document.chatbot.json
 }
 

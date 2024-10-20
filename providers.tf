@@ -2,9 +2,6 @@
 provider "aws" {
   region = var.region
   default_tags {
-    tags = {
-      Env     = "haruka-aibara"
-      Project = local.app_name
-    }
+    tags = local.default_tags
   }
 }

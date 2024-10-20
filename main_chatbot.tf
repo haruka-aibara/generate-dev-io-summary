@@ -1,5 +1,5 @@
 resource "aws_chatbot_slack_channel_configuration" "this" {
-  configuration_name          = local.app_name
+  configuration_name          = local.project_name
   iam_role_arn                = aws_iam_role.chatbot.arn
   slack_channel_id            = local.slack_channel_id
   slack_team_id               = local.slack_workspace_id
